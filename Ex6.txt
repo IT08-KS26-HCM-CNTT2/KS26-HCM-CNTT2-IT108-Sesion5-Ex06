@@ -1,0 +1,40 @@
+
+BÀI 6: THIẾT LẬP MÔI TRƯỜNG LÀM VIỆC CHO HỆ THỐNG SMART-FARM TRÊN SOC
+PHẦN 1: BẢN PHÂN TÍCH LUỒNG IPO (INPUT - PROCESS - OUTPUT)
+1. INPUT (Đầu vào):
+   - Môi trường làm việc: Windows IoT / Windows Server Core trên chip SoC.
+   - Thư mục gốc của người dùng: Home (~)
+   - File mẫu: 'template.ps1' nằm trong thư mục 'Public'.
+2. PROCESS (Xử lý):
+   - Bước 1: Tạo cây thư mục 'smart-farm' gồm 3 thư mục con 'bin', 'config', 'data' từ thư mục Home (~) bằng 1 dòng lệnh.
+   - Bước 2: Tạo file ẩn '.env' trong thư mục 'config' và giải thích cơ chế hiển thị của Get-ChildItem.
+   - Bước 3: Sao chép file 'Public\template.ps1' vào 'smart-farm\bin' và đổi tên thành 'pump_control.ps1' bằng 1 dòng lệnh.
+   - Bước 4: Kiểm tra đệ quy cấu trúc cây thư mục để xác nhận vị trí file.
+   - Xử lý ràng buộc: Phương pháp xử lý lỗi "Access to the path is denied" bằng quyền Administrator.
+3. OUTPUT (Đầu ra):
+   - Cấu trúc cây thư mục hoàn chỉnh tại thư mục Home (~):
+     ~/smart-farm/
+     ├── bin/
+     │   └── pump_control.ps1
+     ├── config/
+     │   └── .env (File ẩn)
+     └── data/
+PHẦN 2: NHẬT KÝ (LOG) CÁC CÂU LỆNH POWERSHELL THỰC THI
+# Bước 1: Tạo thư mục smart-farm chứa bin, config, data bằng 1 dòng lệnh
+New-Item -ItemType Directory -Path "~\smart-farm\bin", "~\smart-farm\config", "~\smart-farm\data" -Force
+# Bước 2: Tạo file ẩn .env trong thư mục config
+New-Item -ItemType File -Path "~\smart-farm\config\.env" -Force | Set-ItemProperty -Name Attributes -Value Hidden
+# Giải thích Bước 2:
+# Lệnh `Get-ChildItem` (hoặc `dir`/`ls`) thông thường sẽ bỏ qua các tệp/thư mục có thuộc tính (Attributes) là Hidden. 
+# Để nhìn thấy file '.env', cần thêm tham số `-Force` (ví dụ: `Get-ChildItem -Force`).
+# Bước 3: Sao chép template.ps1 từ Public vào bin và đổi tên thành pump_control.ps1 trong 1 dòng lệnh
+Copy-Item -Path "C:\Users\Public\template.ps1" -Destination "~\smart-farm\bin\pump_control.ps1" -Force
+# Bước 4: Liệt kê kiểm tra lại toàn bộ cấu trúc thư mục smart-farm (bao gồm cả file ẩn)
+Get-ChildItem -Path "~\smart-farm" -Recurse -Force
+PHẦN 3: XỬ LÝ LỖI "Access to the path is denied" (RÀNG BUỘC)
+Khi gặp lỗi "Access to the path is denied" do thiếu quyền quản trị (Administrator), bạn có thể xử lý bằng các cách sau:
+1. Chạy PowerShell với quyền Administrator:
+   - Nhấn phím `Windows`, gõ "PowerShell", nhấp chuột phải chọn "Run as administrator".
+2. Chạy lại lệnh trong phiên làm việc hiện tại bằng lệnh Start-Process (Nâng quyền):
+   Start-Process powershell -Verb RunAs
+3. Bổ sung tham số `-Force` vào cuối câu lệnh `Copy-Item` để ghi đè hoặc vượt qua các hạn chế thuộc tính tệp thông thường (nếu tài khoản hiện tại đã có quyền hạn phù hợp).
